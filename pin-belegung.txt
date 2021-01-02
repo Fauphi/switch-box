@@ -1,0 +1,70 @@
+A0 Analog Pin		| POTI 
+A1 Analog Pin		|
+A2 Analog Pin		|
+A3 Analog Pin		|
+A4 Analog Pin		|
+A5 Analog Pin		|
+A6 Analog Pin		|
+A7 Analog Pin		|
+A8 Analog Pin		| MATRIX9
+A9 Analog Pin		| MATRIX10
+A10 Analog Pin		| MATRIX11
+A11 Analog Pin		| MATRIX12
+A12 Analog Pin		| MATRIX13
+A13 Analog Pin		| MATRIX14
+A14 Analog Pin		| MATRIX15
+A15 Analog Pin		| MATRIX16
+
+(AnalogPin A0-A15 == DigitalPin 54-69)
+
+4 PWM				| VOLTAGE METER
+5 PWM				| SPEAKER
+6 PWM				|
+7 PWM				|
+8 PWM				|
+9 PWM				|
+10 PWM				|
+11 PWM				|
+12 PWM				|
+
+14 Digital Pin		| LED1
+15 Digital Pin		| LED2
+16 Digital Pin		| LED3
+17 Digital Pin		| LED4
+18 Digital Pin		| LED5
+19 Digital Pin		| LED6
+20 Digital Pin		| LED7
+21 Digital Pin		| LED8
+22 Digital Pin		| LED9
+23 Digital Pin		| LED10
+24 Digital Pin		| LED11
+25 Digital Pin		| LED12
+26 Digital Pin		| LED13
+27 Digital Pin		| LED14
+28 Digital Pin		| LED15
+29 Digital Pin		| LED16
+30 Digital Pin		| SW1
+31 Digital Pin		| SW2
+32 Digital Pin		| SW3
+33 Digital Pin		| SW4
+34 Digital Pin		| SW5
+35 Digital Pin		| SW6
+36 Digital Pin		| SW7
+37 Digital Pin		| SW8
+38 Digital Pin		| SW9
+39 Digital Pin		| SW10
+40 Digital Pin		| SW11
+41 Digital Pin		|
+42 Digital Pin		|
+43 Digital Pin		|
+44 Digital Pin		|
+45 Digital Pin		|
+46 Digital Pin		| MATRIX1
+47 Digital Pin		| MATRIX2
+48 Digital Pin		| MATRIX3
+49 Digital Pin		| MATRIX4
+50 Digital Pin		| MATRIX5
+51 Digital Pin		| MATRIX6
+52 Digital Pin		| MATRIX7
+53 Digital Pin		| MATRIX8
+

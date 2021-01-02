@@ -1,0 +1,297 @@
+/*
+  Row-Column Scanning an 8x8 LED matrix with X-Y input
+
+  This example controls an 8x8 LED matrix using two analog inputs.
+
+  This example works for the Lumex LDM-24488NI Matrix. See
+  http://sigma.octopart.com/140413/datasheet/Lumex-LDM-24488NI.pdf
+  for the pin connections.
+
+  For other LED cathode column matrixes, you should only need to change the pin
+  numbers in the row[] and column[] arrays.
+
+  rows are the anodes
+  cols are the cathodes
+  ---------
+
+  Pin numbers:
+  Matrix:
+  - digital pins 2 through 13,
+  - analog pins 2 through 5 used as digital 16 through 19
+  Potentiometers:
+  - center pins are attached to analog pins 0 and 1, respectively
+  - side pins attached to +5V and ground, respectively
+
+  created 27 May 2009
+  modified 30 Aug 2011
+  by Tom Igoe
+
+  This example code is in the public domain.
+
+  http://www.arduino.cc/en/Tutorial/RowColumnScanning
+
+  see also http://www.tigoe.net/pcomp/code/category/arduinowiring for more
+*/
+
+#include "pitches.h";
+
+// 2-dimensional array of row pin numbers:
+const int row[8] = {
+    55, 56, 60, 9, 61, 7, 6, 58
+};
+
+// 2-dimensional array of column pin numbers:
+const int col[8] = {
+    62, 57, 11, 59, 4, 10, 5, 8
+};
+
+// 2-dimensional array of pixels:
+int pixels[8][8];
+
+// cursor position:
+int x = 5;
+int y = 5;
+
+// IMAGES
+
+const int IMG_ARROWS[] = {
+1,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,
+0,0,1,1,0,0,0,0,
+0,1,1,1,0,0,0,0,
+0,0,0,0,1,1,1,0,
+0,0,0,0,1,1,0,0,
+0,0,0,0,1,0,1,0,
+0,0,0,0,0,0,0,1
+};
+
+const int IMG_HEART[] = {
+0,0,0,0,0,0,0,0,
+0,1,1,0,0,1,1,0,
+1,0,0,1,1,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+0,1,0,0,0,0,1,0,
+0,0,1,0,0,1,0,0,
+0,0,0,1,1,0,0,0
+};
+
+const int IMG_BENNI[] = {
+1,0,0,0,1,1,1,1,
+1,1,1,0,1,1,0,0,
+1,0,1,0,1,0,0,0,
+1,1,1,0,1,1,1,1,
+0,0,0,0,0,0,0,0,
+1,1,0,1,0,1,0,0,
+1,0,1,1,0,1,0,0,
+1,0,0,1,0,1,0,0
+};
+
+const int IMG_BLACK[] = {
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+};
+
+const int IMG_WHITE[] = {
+1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1
+};
+
+const int IMG_ANIMATION_1[] = {
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,1,1,0,0,0,
+0,0,0,1,1,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+};
+
+const int IMG_ANIMATION_2[] = {
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,1,1,1,1,0,0,
+0,0,1,0,0,1,0,0,
+0,0,1,0,0,1,0,0,
+0,0,1,1,1,1,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+};
+
+const int IMG_ANIMATION_3[] = {
+0,0,0,0,0,0,0,0,
+0,1,1,1,1,1,1,0,
+0,1,0,0,0,0,1,0,
+0,1,0,0,0,0,1,0,
+0,1,0,0,0,0,1,0,
+0,1,0,0,0,0,1,0,
+0,1,1,1,1,1,1,0,
+0,0,0,0,0,0,0,0
+};
+
+const int IMG_ANIMATION_4[] = {
+1,1,1,1,1,1,1,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,
+1,1,1,1,1,1,1,1
+};
+
+int ANIMATION_FRAME = 1;
+const int ANIMATION_INTERVAL = 200;
+
+// IMAGES END
+
+void refreshScreen();
+void play_animation();
+
+int SPKR = 3;
+
+void setup() {
+    // initialize the I/O pins as outputs iterate over the pins:
+    for (int thisPin = 0; thisPin < 8; thisPin++) {
+        // initialize the output pins:
+        pinMode(col[thisPin], OUTPUT);
+        pinMode(row[thisPin], OUTPUT);
+        // take the col pins (i.e. the cathodes) high to ensure that the LEDS are off:
+        digitalWrite(col[thisPin], LOW);
+        digitalWrite(row[thisPin], HIGH);
+    }
+
+    pinMode(SPKR, OUTPUT);
+
+    // initialize the pixel matrix:
+    for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+            pixels[x][y] = HIGH;
+        }
+    }
+
+    for(int x=0;x<8;x++) {
+        for(int y=0;y<8;y++) {
+            if(IMG_BLACK[8 * y + x] == 1) {
+                pixels[x][y] = LOW;
+            } else {
+                pixels[x][y] = HIGH;
+            }
+        }
+    }
+}
+
+// Generally, you should use "unsigned long" for variables that hold time
+// The value will quickly become too large for an int to store
+unsigned long previousMillis = 0;        // will store last time LED was updated
+unsigned long currentMillis;
+
+// constants won't change:
+const long interval = 60;
+
+boolean isHeart = false;
+
+void loop() {
+    currentMillis = millis();
+
+    // draw the screen:
+    refreshScreen();
+
+    play_animation();
+
+    if(false) {
+        if (currentMillis - previousMillis >= interval) {
+            // save the last time you blinked the LED
+            previousMillis = currentMillis;
+            int newArt[64];
+            memcpy(newArt, IMG_BLACK, sizeof newArt);
+            if(!isHeart) {
+                tone(SPKR, NOTE_C3, 1000 / 16);
+                memcpy(newArt, IMG_HEART, sizeof IMG_HEART);
+                isHeart = true;
+            } else {
+                tone(SPKR, NOTE_C4, 1000 / 16);
+                isHeart = false;
+            }
+
+            for(int x=0;x<8;x++) {
+                for(int y=0;y<8;y++) {
+                    if(newArt[8 * y + x] == 1) {
+                        pixels[x][y] = LOW;
+                    } else {
+                        pixels[x][y] = HIGH;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+void play_animation() {
+    if (currentMillis - previousMillis >= ANIMATION_INTERVAL) {
+        // save the last time you blinked the LED
+        previousMillis = currentMillis;
+
+        int newFrame[64];
+        memcpy(newFrame, IMG_ANIMATION_1, sizeof newFrame);
+        
+        if(ANIMATION_FRAME == 1) {
+            ANIMATION_FRAME = 2;
+        } else if(ANIMATION_FRAME == 2) {
+            memcpy(newFrame, IMG_ANIMATION_2, sizeof IMG_ANIMATION_2);
+            ANIMATION_FRAME = 3;
+        } else if(ANIMATION_FRAME == 3) {
+            memcpy(newFrame, IMG_ANIMATION_3, sizeof IMG_ANIMATION_3);
+            ANIMATION_FRAME = 4;
+        } else if(ANIMATION_FRAME == 4) {
+            memcpy(newFrame, IMG_ANIMATION_4, sizeof IMG_ANIMATION_4);
+            ANIMATION_FRAME = 1;
+        }
+
+        for(int x=0;x<8;x++) {
+            for(int y=0;y<8;y++) {
+                if(newFrame[8 * y + x] == 1) {
+                    pixels[x][y] = LOW;
+                } else {
+                    pixels[x][y] = HIGH;
+                }
+            }
+        }
+    }
+}
+
+void refreshScreen() {
+    // iterate over the rows (anodes):
+    for (int thisRow = 0; thisRow < 8; thisRow++) {
+        // take the row pin (anode) high:
+        digitalWrite(col[thisRow], HIGH);
+        // iterate over the cols (cathodes):
+        for (int thisCol = 0; thisCol < 8; thisCol++) {
+            // get the state of the current pixel;
+            int thisPixel = pixels[thisRow][thisCol];
+            // when the row is HIGH and the col is LOW,
+            // the LED where they meet turns on:
+            digitalWrite(row[thisCol], thisPixel);
+            // turn the pixel off:
+            if (thisPixel == LOW) {
+                digitalWrite(row[thisCol], HIGH);
+            }
+        }
+        // take the row pin low to turn off the whole row:
+        digitalWrite(col[thisRow], LOW);
+    }
+}
